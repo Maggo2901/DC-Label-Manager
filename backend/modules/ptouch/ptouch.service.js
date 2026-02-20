@@ -1,7 +1,9 @@
 const { ValidationError } = require('../../app/http/errors');
 const { createPdfDocument, mmToPt, setPdfDownloadHeaders } = require('../../app/shared/pdfService');
 
-const ALLOWED_WIDTHS_MM = [9, 12, 16, 20, 24];
+const PRESET_WIDTHS_MM = [9, 12, 16, 20, 24];
+const MIN_TAPE_WIDTH = 3;
+const MAX_TAPE_WIDTH = 36;
 const MIN_FONT_SIZE_PT = 6;
 const MAX_LABELS = 500;
 const H_PADDING_MM = 5;
@@ -11,10 +13,15 @@ function validatePayload(rawPayload) {
   const issues = [];
 
   const tapeWidth = Number(payload.tapeWidth);
-  if (!ALLOWED_WIDTHS_MM.includes(tapeWidth)) {
+  if (
+    Number.isNaN(tapeWidth) ||
+    !Number.isFinite(tapeWidth) ||
+    tapeWidth < MIN_TAPE_WIDTH ||
+    tapeWidth > MAX_TAPE_WIDTH
+  ) {
     issues.push({
       path: ['tapeWidth'],
-      message: `Expected one of: ${ALLOWED_WIDTHS_MM.join(', ')}`
+      message: `Tape width must be between ${MIN_TAPE_WIDTH} and ${MAX_TAPE_WIDTH} mm`
     });
   }
 
@@ -45,13 +52,32 @@ function validatePayload(rawPayload) {
     }
   });
 
+  /* duplicateCount – optional, defaults to 1 */
+  let duplicateCount = 1;
+  if (payload.duplicateCount != null) {
+    duplicateCount = Number(payload.duplicateCount);
+    if (
+      Number.isNaN(duplicateCount) ||
+      !Number.isInteger(duplicateCount) ||
+      duplicateCount < 1 ||
+      duplicateCount > 50
+    ) {
+      issues.push({
+        path: ['duplicateCount'],
+        message: 'duplicateCount must be an integer between 1 and 50'
+      });
+      duplicateCount = 1;
+    }
+  }
+
   if (issues.length > 0) {
     throw new ValidationError('Invalid P-Touch payload', issues);
   }
 
   return {
     tapeWidth,
-    labels
+    labels,
+    duplicateCount
   };
 }
 
@@ -85,7 +111,7 @@ function fitFontSize(doc, text, preferredSize, maxWidthPt) {
 }
 
 function streamTapePdf(res, payload) {
-  const { tapeWidth, labels } = validatePayload(payload);
+  const { tapeWidth, labels, duplicateCount } = validatePayload(payload);
   const doc = createPdfDocument();
   const nowIso = new Date().toISOString().replace(/[:.]/g, '-');
   const filename = `PTouch_Labels_${tapeWidth}mm_${nowIso}.pdf`;
@@ -98,36 +124,39 @@ function streamTapePdf(res, payload) {
     const availableWidth = layout.pageWidthPt - layout.hPaddingPt * 2;
     const fontSize = fitFontSize(doc, text, layout.baseFontSize, availableWidth);
 
-    doc.addPage({
-      size: [layout.pageWidthPt, layout.pageHeightPt],
-      margin: 0
-    });
-
-    doc.rect(0, 0, layout.pageWidthPt, layout.pageHeightPt).fill('#FFFFFF');
-
-    const lineHeight = doc.font('Helvetica').fontSize(fontSize).currentLineHeight(true);
-    const textY = (layout.pageHeightPt - lineHeight) / 2;
-
-    doc
-      .font('Helvetica')
-      .fontSize(fontSize)
-      .fillColor('#000000')
-      .text(text, layout.hPaddingPt, textY, {
-        width: availableWidth,
-        align: 'center',
-        lineBreak: false
+    /* Repeat each label duplicateCount times (default 1) */
+    for (let copy = 0; copy < duplicateCount; copy++) {
+      doc.addPage({
+        size: [layout.pageWidthPt, layout.pageHeightPt],
+        margin: 0
       });
+
+      doc.rect(0, 0, layout.pageWidthPt, layout.pageHeightPt).fill('#FFFFFF');
+
+      const lineHeight = doc.font('Helvetica').fontSize(fontSize).currentLineHeight(true);
+      const textY = (layout.pageHeightPt - lineHeight) / 2;
+
+      doc
+        .font('Helvetica')
+        .fontSize(fontSize)
+        .fillColor('#000000')
+        .text(text, layout.hPaddingPt, textY, {
+          width: availableWidth,
+          align: 'center',
+          lineBreak: false
+        });
+    }
   });
 
   doc.end();
 
   return {
-    count: labels.length,
+    count: labels.length * duplicateCount,
     tapeWidth
   };
 }
 
 module.exports = {
-  ALLOWED_WIDTHS_MM,
+  PRESET_WIDTHS_MM,
   streamTapePdf
 };

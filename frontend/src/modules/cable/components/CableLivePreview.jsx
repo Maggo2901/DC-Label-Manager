@@ -130,145 +130,148 @@ export default function CableLivePreview({
   };
 
   return (
-    <div className="flex h-full flex-col gap-0">
-      {/* ─── Header ───────────────────────────────────────── */}
-      <div className="shrink-0 flex flex-col items-center gap-2 pb-2">
-        <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
-          Label Preview{' '}
-          <span className="text-slate-500 font-normal">({layoutName})</span>
-        </h3>
+    <div className="flex h-full flex-col gap-3">
+      {/* ── Top Card: Preview ── */}
+      <div className="dc-panel flex-1 min-h-0 flex flex-col overflow-hidden">
+        {/* ─── Header ───────────────────────────────────────── */}
+        <div className="shrink-0 flex flex-col items-center gap-2 px-3 pt-3 pb-2">
+          <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+            Label Preview{' '}
+            <span className="text-slate-500 font-normal">({layoutName})</span>
+          </h3>
 
-        {/* Pagination pill */}
-        <div className="flex items-center gap-3 rounded-full bg-slate-800/60 px-4 py-1.5 border border-slate-700/50">
-          <button
-            onClick={() => onNavigate('prev')}
-            disabled={totalItems <= 1}
-            className="text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <span className="min-w-[100px] text-center text-xs font-mono font-medium text-emerald-400 select-none">
-            {previewHint ||
-              (activeIndex === -1
-                ? 'LIVE INPUT'
-                : `ITEM ${activeIndex + 1} OF ${totalItems}`)}
-          </span>
-          <button
-            onClick={() => onNavigate('next')}
-            disabled={totalItems <= 1}
-            className="text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* ─── Toolbar ──────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center justify-between gap-3 rounded-t-xl border border-b-0 border-slate-800 bg-slate-900/80 px-3 py-2">
-        {/* Zoom controls */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleZoomChange(zoomPercent - ZOOM_STEP)}
-            disabled={actualSize || zoomPercent <= ZOOM_MIN}
-            className="text-slate-400 hover:text-white disabled:opacity-30 transition-colors p-1"
-            title="Zoom out"
-          >
-            <ZoomOut className="h-3.5 w-3.5" />
-          </button>
-
-          <input
-            type="range"
-            min={ZOOM_MIN}
-            max={ZOOM_MAX}
-            step={ZOOM_STEP}
-            value={actualSize ? 100 : zoomPercent}
-            onChange={(e) => handleZoomChange(e.target.value)}
-            disabled={actualSize}
-            className="w-24 accent-indigo-500 cursor-pointer disabled:opacity-40"
-            title={`Zoom: ${zoomPercent}%`}
-          />
-
-          <button
-            onClick={() => handleZoomChange(zoomPercent + ZOOM_STEP)}
-            disabled={actualSize || zoomPercent >= ZOOM_MAX}
-            className="text-slate-400 hover:text-white disabled:opacity-30 transition-colors p-1"
-            title="Zoom in"
-          >
-            <ZoomIn className="h-3.5 w-3.5" />
-          </button>
-
-          <button
-            onClick={resetZoom}
-            disabled={actualSize}
-            className="text-[10px] font-mono text-slate-400 hover:text-white disabled:opacity-40 min-w-[40px] text-center transition-colors"
-            title="Reset zoom to 100%"
-          >
-            {actualSize ? '1:1' : `${zoomPercent}%`}
-          </button>
-        </div>
-
-        {/* Toggles */}
-        <div className="flex items-center gap-1.5">
-          <ToolbarToggle
-            active={actualSize}
-            onClick={toggleActualSize}
-            title="Actual Size (1:1)"
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </ToolbarToggle>
-
-          <ToolbarToggle
-            active={showGrid}
-            onClick={() => setShowGrid((v) => !v)}
-            title="Toggle grid overlay"
-          >
-            <Grid3X3 className="h-3.5 w-3.5" />
-          </ToolbarToggle>
-        </div>
-      </div>
-
-      {/* ─── Main Preview Area ────────────────────────────── */}
-      <div
-        ref={containerRef}
-        className="relative flex-1 min-h-0 overflow-auto dc-panel rounded-t-none border-t-0 flex items-center justify-center"
-      >
-        {!activeItem ? (
-          <div className="text-slate-600 flex flex-col items-center gap-2">
-            <p className="text-sm">No preview available</p>
-            <p className="text-xs text-slate-700">Enter label data to see a live preview</p>
+          {/* Pagination pill */}
+          <div className="flex items-center gap-3 rounded-full bg-slate-800/60 px-4 py-1.5 border border-slate-700/50">
+            <button
+              onClick={() => onNavigate('prev')}
+              disabled={totalItems <= 1}
+              className="text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="min-w-[100px] text-center text-xs font-mono font-medium text-emerald-400 select-none">
+              {previewHint ||
+                (activeIndex === -1
+                  ? 'LIVE INPUT'
+                  : `ITEM ${activeIndex + 1} OF ${totalItems}`)}
+            </span>
+            <button
+              onClick={() => onNavigate('next')}
+              disabled={totalItems <= 1}
+              className="text-slate-400 hover:text-white disabled:opacity-30 transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
-        ) : (
-          <div className="relative flex items-center justify-center">
-            {/* Grid overlay */}
-            {showGrid && (
-              <GridOverlay
-                widthMm={labelW}
-                heightMm={labelH}
-                scale={effectiveScale}
-              />
-            )}
+        </div>
 
-            <LabelPreview
-              type="cable"
-              layoutSlug={layoutSlug}
-              row={activeItem}
-              hint={activeIndex === -1 ? 'Live Preview' : `Item ${activeIndex + 1}`}
-              scale={effectiveScale}
-              frameless={true}
+        {/* ─── Toolbar ──────────────────────────────────────── */}
+        <div className="shrink-0 flex items-center justify-between gap-3 border-t border-slate-800 bg-slate-900/80 px-3 py-2">
+          {/* Zoom controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleZoomChange(zoomPercent - ZOOM_STEP)}
+              disabled={actualSize || zoomPercent <= ZOOM_MIN}
+              className="text-slate-400 hover:text-white disabled:opacity-30 transition-colors p-1"
+              title="Zoom out"
+            >
+              <ZoomOut className="h-3.5 w-3.5" />
+            </button>
+
+            <input
+              type="range"
+              min={ZOOM_MIN}
+              max={ZOOM_MAX}
+              step={ZOOM_STEP}
+              value={actualSize ? 100 : zoomPercent}
+              onChange={(e) => handleZoomChange(e.target.value)}
+              disabled={actualSize}
+              className="w-24 accent-indigo-500 cursor-pointer disabled:opacity-40"
+              title={`Zoom: ${zoomPercent}%`}
             />
-          </div>
-        )}
 
-        {/* Actual-size indicator */}
-        {actualSize && (
-          <div className="absolute top-2 right-2 rounded bg-amber-600/90 px-2 py-0.5 text-[10px] font-semibold text-white uppercase tracking-wide select-none">
-            Actual Size
+            <button
+              onClick={() => handleZoomChange(zoomPercent + ZOOM_STEP)}
+              disabled={actualSize || zoomPercent >= ZOOM_MAX}
+              className="text-slate-400 hover:text-white disabled:opacity-30 transition-colors p-1"
+              title="Zoom in"
+            >
+              <ZoomIn className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              onClick={resetZoom}
+              disabled={actualSize}
+              className="text-[10px] font-mono text-slate-400 hover:text-white disabled:opacity-40 min-w-[40px] text-center transition-colors"
+              title="Reset zoom to 100%"
+            >
+              {actualSize ? '1:1' : `${zoomPercent}%`}
+            </button>
           </div>
-        )}
+
+          {/* Toggles */}
+          <div className="flex items-center gap-1.5">
+            <ToolbarToggle
+              active={actualSize}
+              onClick={toggleActualSize}
+              title="Actual Size (1:1)"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </ToolbarToggle>
+
+            <ToolbarToggle
+              active={showGrid}
+              onClick={() => setShowGrid((v) => !v)}
+              title="Toggle grid overlay"
+            >
+              <Grid3X3 className="h-3.5 w-3.5" />
+            </ToolbarToggle>
+          </div>
+        </div>
+
+        {/* ─── Main Preview Area ────────────────────────────── */}
+        <div
+          ref={containerRef}
+          className="relative flex-1 min-h-0 overflow-auto border-t border-slate-800 flex items-center justify-center"
+        >
+          {!activeItem ? (
+            <div className="text-slate-600 flex flex-col items-center gap-2">
+              <p className="text-sm">No preview available</p>
+              <p className="text-xs text-slate-700">Enter label data to see a live preview</p>
+            </div>
+          ) : (
+            <div className="relative flex items-center justify-center">
+              {/* Grid overlay */}
+              {showGrid && (
+                <GridOverlay
+                  widthMm={labelW}
+                  heightMm={labelH}
+                  scale={effectiveScale}
+                />
+              )}
+
+              <LabelPreview
+                type="cable"
+                layoutSlug={layoutSlug}
+                row={activeItem}
+                hint={activeIndex === -1 ? 'Live Preview' : `Item ${activeIndex + 1}`}
+                scale={effectiveScale}
+                frameless={true}
+              />
+            </div>
+          )}
+
+          {/* Actual-size indicator */}
+          {actualSize && (
+            <div className="absolute top-2 right-2 rounded bg-amber-600/90 px-2 py-0.5 text-[10px] font-semibold text-white uppercase tracking-wide select-none">
+              Actual Size
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ─── Footer: Dimensions ───────────────────────────── */}
-      <div className="shrink-0 flex items-center justify-center gap-3 pt-2">
+      {/* ── Bottom Card: Dimensions ── */}
+      <div className="dc-panel shrink-0 h-[60px] flex items-center justify-center gap-3 p-3">
         <DimensionBadge widthMm={labelW} heightMm={labelH} />
         <span className="text-[10px] text-slate-600 uppercase tracking-widest select-none">
           {layoutDefinition?.page || CABLE_BASE_LAYOUT_LABEL}
