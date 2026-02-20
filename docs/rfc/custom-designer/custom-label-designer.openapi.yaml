@@ -1,0 +1,439 @@
+openapi: 3.1.0
+info:
+  title: DC Label Platform - Custom Label Designer API (MVP v1)
+  version: 0.1.0
+  description: |
+    Minimal API for template CRUD, validate, preview, and PDF generation.
+    Scope is intentionally small for stable v1.
+servers:
+  - url: /api
+paths:
+  /custom-templates:
+    get:
+      summary: List custom templates
+      operationId: listCustomTemplates
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateListResponse'
+    post:
+      summary: Create custom template
+      operationId: createCustomTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTemplateRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /custom-templates/validate:
+    post:
+      summary: Validate template document without saving
+      operationId: validateCustomTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateTemplateRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResultResponse'
+
+  /custom-templates/{templateId}:
+    parameters:
+      - $ref: '#/components/parameters/TemplateId'
+    get:
+      summary: Get template by id
+      operationId: getCustomTemplate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      summary: Update template by id
+      operationId: updateCustomTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTemplateRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    delete:
+      summary: Delete template by id
+      operationId: deleteCustomTemplate
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /custom-templates/{templateId}/preview:
+    parameters:
+      - $ref: '#/components/parameters/TemplateId'
+    post:
+      summary: Resolve template with data context for preview
+      operationId: previewCustomTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewRequest'
+      responses:
+        '200':
+          description: Preview data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /custom-templates/{templateId}/generate:
+    parameters:
+      - $ref: '#/components/parameters/TemplateId'
+    post:
+      summary: Generate PDF from template and data context
+      operationId: generateCustomTemplatePdf
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateRequest'
+      responses:
+        '200':
+          description: PDF stream
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+components:
+  parameters:
+    TemplateId:
+      name: templateId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            issues:
+              type: array
+              items:
+                type: object
+
+    TemplateSummary:
+      type: object
+      required: [templateId, name, schemaVersion, updatedAt]
+      properties:
+        templateId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        schemaVersion:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+
+    ElementDocument:
+      type: object
+      required: [id, type, xMm, yMm, widthMm, heightMm, style, binding]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [text, variableText, line, rect, arrow]
+        xMm:
+          type: number
+          minimum: 0
+          maximum: 38.1
+        yMm:
+          type: number
+          minimum: 0
+          maximum: 101.6
+        widthMm:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 38.1
+        heightMm:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 101.6
+        style:
+          type: object
+          additionalProperties: false
+          properties:
+            fill:
+              type: string
+            stroke:
+              type: string
+            strokeWidth:
+              type: number
+            fontFamily:
+              type: string
+            fontSizePt:
+              type: number
+            fontWeight:
+              type: string
+              enum: [normal, bold]
+            fontStyle:
+              type: string
+              enum: [normal, italic]
+            textAlign:
+              type: string
+              enum: [left, center, right]
+        binding:
+          type: object
+          required: [kind, value]
+          additionalProperties: false
+          properties:
+            kind:
+              type: string
+              enum: [static, field]
+            value:
+              type: string
+            fallback:
+              type: string
+
+    TemplateDocument:
+      type: object
+      required: [templateId, name, schemaVersion, page, zones, elements, metadata]
+      properties:
+        templateId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        schemaVersion:
+          type: string
+          const: 1.0.0
+        page:
+          type: object
+          required: [widthMm, heightMm]
+          properties:
+            widthMm:
+              type: number
+              const: 38.1
+            heightMm:
+              type: number
+              const: 101.6
+        zones:
+          type: object
+          required: [printableTopMm, printableBottomMm, lockedTopMm, lockedBottomMm]
+          properties:
+            printableTopMm:
+              type: number
+              const: 0
+            printableBottomMm:
+              type: number
+              const: 50.8
+            lockedTopMm:
+              type: number
+              const: 50.8
+            lockedBottomMm:
+              type: number
+              const: 101.6
+        elements:
+          type: array
+          items:
+            $ref: '#/components/schemas/ElementDocument'
+        metadata:
+          type: object
+          required: [createdAt, updatedAt]
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    CreateTemplateRequest:
+      type: object
+      required: [name, template]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        template:
+          $ref: '#/components/schemas/TemplateDocument'
+
+    UpdateTemplateRequest:
+      type: object
+      required: [name, template]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        template:
+          $ref: '#/components/schemas/TemplateDocument'
+
+    ValidateTemplateRequest:
+      type: object
+      required: [template]
+      properties:
+        template:
+          $ref: '#/components/schemas/TemplateDocument'
+
+    PreviewRequest:
+      type: object
+      properties:
+        dataContext:
+          type: object
+          additionalProperties: true
+
+    GenerateRequest:
+      type: object
+      properties:
+        dataContext:
+          type: object
+          additionalProperties: true
+        fileName:
+          type: string
+          maxLength: 200
+
+    ValidationResultResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          required: [valid]
+          properties:
+            valid:
+              type: boolean
+            issues:
+              type: array
+              items:
+                type: object
+
+    TemplateListResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          required: [templates]
+          properties:
+            templates:
+              type: array
+              items:
+                $ref: '#/components/schemas/TemplateSummary'
+
+    TemplateResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          required: [template]
+          properties:
+            template:
+              $ref: '#/components/schemas/TemplateDocument'
+
+    PreviewResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        data:
+          type: object
+          required: [templateId, renderModel]
+          properties:
+            templateId:
+              type: string
+              format: uuid
+            renderModel:
+              type: object
+            warnings:
+              type: array
+              items:
+                type: string

@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    restart: always
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+    volumes:
+      - backend-storage:/workspace/backend/storage
+    networks:
+      - dc-label-net
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "9020:80"
+    environment:
+      - AUTH_ENABLED=false
+      - ALLOWLIST_ENABLED=false
+      - ALLOWLIST_IPS=127.0.0.1
+    volumes:
+      # Mount htpasswd file (ensure it exists or create dummy)
+      - ./secrets/nginx.htpasswd:/etc/nginx/.htpasswd:Z,ro
+    networks:
+      - dc-label-net
+
+networks:
+  dc-label-net:
+    driver: bridge
+
+volumes:
+  backend-storage:

@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ══════════════════════════════════════════════════════════════
+   DC Label Platform – Design System Utility Classes
+   Canonical tokens for visual consistency across all modules.
+   ══════════════════════════════════════════════════════════════ */
+@layer components {
+
+  /* ── Panel / Card ── */
+  .dc-panel {
+    @apply rounded-xl border border-slate-800 bg-slate-900/50;
+  }
+
+  /* ── Form Inputs ── */
+  .dc-input {
+    @apply w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200
+           placeholder:text-slate-500
+           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30
+           transition-colors;
+  }
+
+  /* ── Select Fields ── */
+  .dc-select {
+    @apply w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200
+           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30
+           transition-colors;
+  }
+
+  /* ── Form Labels ── */
+  .dc-label {
+    @apply mb-1 block text-xs font-medium text-slate-400;
+  }
+
+  /* ── Section Sub-headers ── */
+  .dc-section-label {
+    @apply text-[11px] font-medium uppercase tracking-wider text-slate-500;
+  }
+
+  /* ── Module Page Titles ── */
+  .dc-module-title {
+    @apply text-lg font-bold text-white;
+  }
+
+  /* ── Buttons ── */
+  .dc-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600
+           px-4 py-2 text-sm font-medium text-white
+           transition-colors hover:bg-indigo-500
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .dc-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg
+           border border-slate-700 bg-slate-800
+           px-4 py-2 text-sm font-medium text-slate-300
+           transition-colors hover:bg-slate-700 hover:text-white
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .dc-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg
+           px-4 py-2 text-sm font-medium text-slate-400
+           transition-colors hover:bg-slate-800 hover:text-white
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .dc-btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-rose-600
+           px-4 py-2 text-sm font-medium text-white
+           transition-colors hover:bg-rose-500
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .dc-btn-success {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600
+           px-4 py-2 text-sm font-medium text-white
+           transition-colors hover:bg-emerald-500
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+}
+
+html, body, #root {
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background-color: #020617; /* Slate 950 Base (Deep) */
+  color: #e2e8f0; /* Slate 200 */
+  background-image: 
+    /* 1. Subtle Radial Glow (Center-Top) - Stability & Focus */
+    radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+    /* 2. Deep Enterprise Gradient Base */
+    linear-gradient(to bottom right, #020617, #0f172a, #020617),
+    /* 3. Premium Industrial Grid (Diamond Pattern) - Very Low Opacity */
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+/* Custom Scrollbar for Premium Feel */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5); /* Indigo hover */
+}
+
+/* Global inputs focus ring adjustments */
+*:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.5);
+  outline-offset: 2px;
+}
+
+/* Connection Arrow Animation */
+/* Device Row Alignment Wrapper */
+.device-row {
+  display: flex;
+  align-items: center;      /* Centers vertically */
+  justify-content: center;
+  gap: 18px;
+}
+
+.device-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Connection Arrow Animation (Flowing) */
+.connection-flow {
+  display: flex;
+  align-items: center;      /* Centers arrows vertically */
+  justify-content: center;
+  height: 100%;
+  min-width: 70px;
+}
+
+.connection-flow span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-10px);
+  font-size: 16px;
+  font-weight: 600;
+  color: #9fbaff;
+  animation: arrowFlow 2.4s linear infinite;
+}
+
+.connection-flow span:nth-child(1) { animation-delay: 0s; }
+.connection-flow span:nth-child(2) { animation-delay: 0.4s; }
+.connection-flow span:nth-child(3) { animation-delay: 0.8s; }
+.connection-flow span:nth-child(4) { animation-delay: 1.2s; }
+
+@keyframes arrowFlow {
+  0% {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  15% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(8px);
+  }
+  80% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+
+/* Mobile Responsiveness for Device Row */
+@media (max-width: 1024px) {
+  .device-row {
+    gap: 8px; /* Reduce gap on mobile */
+  }
+  
+  .connection-flow {
+    min-width: 50px; /* Reduce arrow width */
+    gap: 2px;
+  }
+  
+  .connection-flow span {
+    font-size: 14px; /* Slightly smaller arrows */
+  }
+}
