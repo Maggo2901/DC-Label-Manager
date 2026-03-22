@@ -1,0 +1,22 @@
+{
+  "name": "dc-label-manager",
+  "description": "DC Label Platform monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend --ignore-scripts",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" --names \"BACKEND,FRONTEND\" --prefix-colors \"blue,green\" --kill-others",
+    "build": "npm run build --prefix frontend",
+    "lint": "npm run lint --prefix frontend",
+    "start": "npm run start --prefix backend",
+    "domain:guard": "node scripts/domain-guard.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "backup": "node scripts/backup.js",
+    "postinstall": "npm run install:all"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "vitest": "^4.0.18"
+  }
+}
